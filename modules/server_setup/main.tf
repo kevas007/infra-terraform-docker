@@ -25,12 +25,12 @@ resource "null_resource" "secure_ssh" {
       private_key = file(var.ssh_private_key_path)
       timeout     = "60s"
     }
-    inline = [
+   inline = [
       "echo '🔐 Sécurisation de SSH en cours...'",
-      "sudo sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config",
-      "sudo sed -i 's/^PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config",
+      "echo '${var.admin_password}' | sudo -S sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config",
+      "echo '${var.admin_password}' | sudo -S sed -i 's/^PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config",
       "echo 'AllowUsers ${var.ssh_user}@${var.allowed_ip}' | sudo tee -a /etc/ssh/sshd_config",
-      "sudo systemctl restart sshd",
+      "echo '${var.admin_password}' | sudo -S systemctl restart sshd",
       "echo '✅ SSH sécurisé.'"
     ]
   }
@@ -50,14 +50,14 @@ resource "null_resource" "setup_firewall" {
     }
     inline = [
       "echo '🛡️ Configuration du firewall UFW...'",
-      "sudo apt update && sudo apt install -y ufw",
-      "sudo ufw allow 22/tcp",
-      "sudo ufw allow 80/tcp",
-      "sudo ufw allow 3306/tcp",
-      "sudo ufw allow from ${var.allowed_ip} to any port 2375",
-      "sudo ufw default deny incoming",
-      "sudo ufw default allow outgoing",
-      "sudo ufw --force enable",
+      "echo '${var.admin_password}' | sudo -S apt update && sudo -S apt install -y ufw",
+      "echo '${var.admin_password}' | sudo -S ufw allow 22/tcp",
+      "echo '${var.admin_password}' | sudo -S ufw allow 80/tcp",
+      "echo '${var.admin_password}' | sudo -S ufw allow 3306/tcp",
+      "echo '${var.admin_password}' | sudo -S ufw allow from ${var.allowed_ip} to any port 2375",
+      "echo '${var.admin_password}' | sudo -S ufw default deny incoming",
+      "echo '${var.admin_password}' | sudo -S ufw default allow outgoing",
+      "echo '${var.admin_password}' | sudo -S ufw --force enable",
       "echo '✅ Firewall UFW configuré.'"
     ]
   }

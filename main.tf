@@ -19,11 +19,13 @@ provider "docker" {
 module "server_setup" {
   source               = "./modules/server_setup"
   server_host          = var.server_host
-  ssh_user             = var.ssh_user          # utilisateur SSH (ex: ubuntu)
+  ssh_user             = var.ssh_user
   ssh_private_key_path = var.ssh_private_key_path
   allowed_ip           = var.allowed_ip
   dirs                 = ["/home/ubuntu/nginx_data", "/home/ubuntu/mysql_data"]
   mysql_root_password  = var.mysql_root_password
+  network_name         = var.network_name
+  admin_password       = var.admin_password  
 }
 
 # Module de réseau Docker (création d'un réseau Docker pour les conteneurs)
@@ -37,8 +39,8 @@ module "nginx_container" {
   source         = "./modules/docker"
   name           = "nginx"
   image          = "nginx:latest"
-  container_port = 80
-  host_port      = 80
+  container_port = 8081
+  host_port      = 8081
   network_name   = module.network.network_name
   volumes = [{
     host_path      = "/home/ubuntu/nginx_data",

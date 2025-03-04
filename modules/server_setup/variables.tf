@@ -10,10 +10,8 @@ variable "ssh_user" {
 }
 
 variable "ssh_private_key_path" {
-  description = "Chemin vers la clé privée SSH (ex: C:\\Users\\kevAs\\.ssh\\id_rsa_terra)"
+  description = "Chemin vers la clé privée SSH"
   type        = string
-
-  default     = "C:/Users/kevAs/.ssh/id_rsa"
 }
 
 variable "allowed_ip" {
@@ -34,6 +32,11 @@ variable "network_name" {
 
 variable "mysql_root_password" {
   description = "Mot de passe root pour MySQL (passé en variable d'environnement au conteneur)"
+  type        = string
+  sensitive   = true
+}
+variable "admin_password" {
+  description = "Mot de passe pour l'élévation sudo sur le serveur"
   type        = string
   sensitive   = true
 }

@@ -26,7 +26,7 @@ resource "docker_container" "container" {
   ports {
     internal = var.container_port
     external = var.host_port
-    ip       = "0.0.0.0"
+    ip       = "localhost"
   }
 
   # Variables d'environnement
