@@ -15,16 +15,15 @@ provider "docker" {
   host = "tcp://${var.server_host}:2375"
 }
 
-# Module de préparation du serveur (SSH + création dossiers)
+# Sécurisation de SSH sur le serveur
 resource "null_resource" "secure_ssh" {
   provisioner "remote-exec" {
     connection {
-      type    = "ssh"
-      user    = var.ssh_user
-      host    = var.server_host
-       # agent   = true         # Utilise ssh-agent pour l'authentification
+      type        = "ssh"
+      user        = var.ssh_user
+      host        = var.server_host
       private_key = file(var.ssh_private_key_path)
-      timeout = "60s"        # Timeout ajusté
+      timeout     = "60s"
     }
     inline = [
       "echo '🔐 Sécurisation de SSH en cours...'",
@@ -39,14 +38,15 @@ resource "null_resource" "secure_ssh" {
 
 # Configuration du firewall (UFW)
 resource "null_resource" "setup_firewall" {
+  depends_on = [null_resource.secure_ssh]
+
   provisioner "remote-exec" {
     connection {
-      type    = "ssh"
-      user    = var.ssh_user
-      host    = var.server_host
-      #agent   = true         # Utilise ssh-agent pour l'authentification
+      type        = "ssh"
+      user        = var.ssh_user
+      host        = var.server_host
       private_key = file(var.ssh_private_key_path)
-      timeout = "60s"        # Timeout ajusté
+      timeout     = "60s"
     }
     inline = [
       "echo '🛡️ Configuration du firewall UFW...'",
@@ -54,26 +54,26 @@ resource "null_resource" "setup_firewall" {
       "sudo ufw allow 22/tcp",
       "sudo ufw allow 80/tcp",
       "sudo ufw allow 3306/tcp",
-      "sudo ufw allow from ${var.allowed_ip} to any port 2375", # Restriction API Docker
+      "sudo ufw allow from ${var.allowed_ip} to any port 2375",
       "sudo ufw default deny incoming",
       "sudo ufw default allow outgoing",
       "sudo ufw --force enable",
       "echo '✅ Firewall UFW configuré.'"
     ]
   }
-  depends_on = [null_resource.secure_ssh]
 }
 
 # Installation et configuration de Fail2Ban
 resource "null_resource" "install_fail2ban" {
+  depends_on = [null_resource.setup_firewall]
+
   provisioner "remote-exec" {
     connection {
-      type    = "ssh"
-      user    = var.ssh_user
-      host    = var.server_host
-      #agent   = true         # Utilise ssh-agent pour l'authentification
+      type        = "ssh"
+      user        = var.ssh_user
+      host        = var.server_host
       private_key = file(var.ssh_private_key_path)
-      timeout = "60s"        # Timeout ajusté
+      timeout     = "60s"
     }
     inline = [
       "echo '🚨 Installation de Fail2Ban...'",
@@ -83,25 +83,31 @@ resource "null_resource" "install_fail2ban" {
       "echo '✅ Fail2Ban installé et activé.'"
     ]
   }
-  depends_on = [null_resource.setup_firewall]
 }
 
-# Création des dossiers requis sur le serveur uniquement s'ils n'existent pas
+# Création des dossiers requis sur le serveur, uniquement s'ils n'existent pas
 resource "null_resource" "create_dirs" {
+  depends_on = [null_resource.install_fail2ban]
+
   provisioner "remote-exec" {
     connection {
-      type    = "ssh"
-      user    = var.ssh_user
-      host    = var.server_host
-      #agent   = true         # Utilise ssh-agent pour l'authentification
-      private_key = file(ssh_private_key_path)
-      timeout = "60s"        # Timeout ajusté
+      type        = "ssh"
+      user        = var.ssh_user
+      host        = var.server_host
+      private_key = file(var.ssh_private_key_path)
+      timeout     = "60s"
     }
     inline = [
       "echo '📁 Vérification et création des dossiers sur le serveur...'",
-      "for dir in ${join(" ", var.dirs)}; do if [ ! -d \"$dir\" ]; then echo \"📂 Création du dossier : $dir\"; mkdir -p \"$dir\"; else echo \"✅ Le dossier existe déjà : $dir\"; fi; done",
+      "for dir in ${join(" ", var.dirs)}; do",
+      "  if [ ! -d \"$dir\" ]; then",
+      "    echo \"📂 Création du dossier : $dir\"",
+      "    mkdir -p \"$dir\"",
+      "  else",
+      "    echo \"✅ Le dossier existe déjà : $dir\"",
+      "  fi",
+      "done",
       "echo '✅ Vérification terminée.'"
     ]
   }
-  depends_on = [null_resource.install_fail2ban]
 }

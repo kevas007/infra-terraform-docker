@@ -12,6 +12,8 @@ variable "ssh_user" {
 variable "ssh_private_key_path" {
   description = "Chemin vers la clé privée SSH (ex: C:\\Users\\kevAs\\.ssh\\id_rsa_terra)"
   type        = string
+
+  default     = "C:/Users/kevAs/.ssh/id_rsa"
 }
 
 variable "allowed_ip" {
@@ -27,7 +29,7 @@ variable "dirs" {
 variable "network_name" {
   description = "Nom du réseau Docker à créer"
   type        = string
-  default     = "app-network"
+
 }
 
 variable "mysql_root_password" {

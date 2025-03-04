@@ -22,7 +22,7 @@ variable "allowed_ip" {
 variable "network_name" {
   description = "Nom du réseau Docker à créer"
   type        = string
-  default     = "app-network"
+  default     = ""
 }
 
 
