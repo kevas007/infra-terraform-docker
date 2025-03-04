@@ -19,15 +19,19 @@ variable "allowed_ip" {
   type        = string
 }
 
+variable "dirs" {
+  description = "Liste des dossiers à créer sur le serveur"
+  type        = list(string)
+}
+
 variable "network_name" {
   description = "Nom du réseau Docker à créer"
   type        = string
   default     = "app-network"
 }
 
-
 variable "mysql_root_password" {
-  description = "Mot de passe root pour MySQL (passé au conteneur MySQL)"
+  description = "Mot de passe root pour MySQL (passé en variable d'environnement au conteneur)"
   type        = string
   sensitive   = true
 }
